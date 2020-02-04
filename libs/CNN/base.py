@@ -625,7 +625,8 @@ def load_test_patches_batch(test_x_data,
     for i in range(0, len(selected_voxels), batch_size):
             c_centers = selected_voxels[i:i + batch_size]
             X = []
-            for m, image_modality in zip(modalities, images):
+            # for m, image_modality in zip(modalities, images):
+            for image_modality in  images:    
                 X.append(get_patches(image_modality[0], c_centers, patch_size))
             yield np.stack(X, axis=1), c_centers
   
