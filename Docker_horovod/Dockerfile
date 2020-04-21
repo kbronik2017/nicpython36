@@ -1,12 +1,12 @@
 
-MAINTAINER thisgithub
+
 FROM ubuntu:18.04
 
 ENV TENSORFLOW_VERSION=2.1.0
 ENV PYTORCH_VERSION=1.4.0
 ENV TORCHVISION_VERSION=0.5.0
 ENV MXNET_VERSION=1.6.0
-
+MAINTAINER thisgithub
 # Python 2.7 or 3.6 is supported by Ubuntu Bionic out of the box
 ARG python=3.6
 ENV PYTHON_VERSION=${python}
