@@ -1,14 +1,13 @@
 
-
 FROM ubuntu:18.04
 
 ENV TENSORFLOW_VERSION=2.1.0
 ENV PYTORCH_VERSION=1.4.0
 ENV TORCHVISION_VERSION=0.5.0
 ENV MXNET_VERSION=1.6.0
-MAINTAINER thisgithub
+
 # Python 2.7 or 3.6 is supported by Ubuntu Bionic out of the box
-ARG python=3.6
+ARG python=2.7
 ENV PYTHON_VERSION=${python}
 
 # Set default shell to /bin/bash
@@ -74,105 +73,9 @@ RUN cat /etc/ssh/ssh_config | grep -v StrictHostKeyChecking > /etc/ssh/ssh_confi
     echo "    StrictHostKeyChecking no" >> /etc/ssh/ssh_config.new && \
     mv /etc/ssh/ssh_config.new /etc/ssh/ssh_config
 
+# Download examples
+RUN apt-get install -y --no-install-recommends subversion && \
+    svn checkout https://github.com/horovod/horovod/trunk/examples && \
+    rm -rf /examples/.svn
 
-ENV DEBIAN_FRONTEND=noninteractive \
-    HOME=/home/${USER} 
-    
-RUN apt-get update -y && \
-    apt-get install -y --no-install-recommends sudo apt-utils && \
-    apt-get install -y --no-install-recommends openssh-server \
-        python3-tk python-dev python-numpy python-pip python-virtualenv python-scipy \
-        bzip2 g++ git curl unzip graphviz libgl1-mesa-glx libhdf5-dev wget \
-        libfreetype6-dev libhdf5-serial-dev libzmq3-dev pkg-config software-properties-common unzip \ 
-        gcc gfortran libopenmpi-dev openmpi-bin openmpi-common openmpi-doc binutils && \
-    apt-get clean && apt-get purge && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-USER root
-
-RUN echo 'export PATH=/opt/conda/bin:$PATH' > /etc/profile.d/conda.sh && \
-    wget --quiet https://repo.continuum.io/archive/Anaconda3-5.0.0.1-Linux-x86_64.sh -O ~/anaconda.sh && \
-    /bin/bash ~/anaconda.sh -b -p /opt/conda && \
-    rm ~/anaconda.sh
-
-ENV PATH /opt/conda/bin:$PATH
-
-RUN conda config --append channels conda-forge
-   
-ENV PATH /opt/conda/bin:$PATH
-ENV PATH /opt/conda/envs/idp/bin:$PATH
-
-RUN conda update conda
-
-RUN conda config --append channels conda-forge
-RUN conda install -y python=${python} && \
-    # pip install --upgrade pip && \
-    pip install \
-      sklearn_pandas \
-      h5py \
-      MedPy \
-      nibabel \
-      Keras \
-      numpy \
-      scipy \
-      Pillow \
-      click \
-      torch \
-      mxnet \
-      tensorflow && \
-    conda install \
-      bcolz \
-      h5py \
-      matplotlib \
-      mkl \
-      nose \
-      notebook \
-      pandas \
-      pydot \
-      pyyaml \
-      scikit-learn \
-      six \
-      theano \
-      mkdocs \
-      && \
-    git clone git://github.com/keras-team/keras.git /src && pip install -e /src[tests] && \
-    pip install git+git://github.com/keras-team/keras.git && \
-    conda clean -yt
-    
-  
-
-
-
-# create a docker user
-RUN useradd -ms /bin/bash docker
-ENV HOME /home/docker
-
-# copy necessary files to container
-RUN mkdir $HOME/src
-ENV PATH=/$HOME/src:${PATH}
-ADD __init__.py $HOME/src/
-ADD .theanorc $HOME/src/
-# ADD .keras $HOME/src/
-# RUN mkdir $HOME/src/.theanorc
-# ENV PATH=/$HOME/src/.theanorc:${PATH}
-# ADD .theanorc $HOME/src/.theanorc/
-# RUN mkdir $HOME/src/.keras
-# ENV PATH=/$HOME/src/.keras:${PATH}
-# ADD .keras $HOME/src/.keras/
-ADD app.py $HOME/src/
-ADD cnn_scripts.py $HOME/src/
-# ADD config $HOME/src/config
-# ADD nets $HOME/src/nets
-ADD libs $HOME/src/libs
-ADD utils $HOME/src/utils
-ADD ssh $HOME/src/ssh
-ADD docker $HOME/src/docker
-ADD logonic.png $HOME/src/
-ADD nic_train_network_batch.py $HOME/src/
-ADD nic_infer_segmentation_batch.py $HOME/src/
-ADD tensorboardlogs $HOME/src/
-# add permissions (odd)
-# RUN chown docker -R nets
-# RUN chown docker -R config 
-
-USER docker
-WORKDIR $HOME/src
+WORKDIR "/examples"
